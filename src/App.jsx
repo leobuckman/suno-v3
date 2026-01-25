@@ -14,123 +14,163 @@ const videoConfig = {
   },
   bass: {
     scale: 0.3,
-    top: '-22px',
+    top: '20px',
     left: '200px',
   },
   chest: {
     scale: 0.25,
-    top: '-10px',
+    top: '30px',
     left: '585px',
   },
   flip: {
     scale: 0.32,
-    top: '-20px',
+    top: '20px',
     left: '950px',
   },
 }
 // ==========================================
 
 export default function App() {
-  const bassVideoRef = useRef(null)
+  // Double-buffering: two video elements for bass and flip to eliminate loading gaps
+  const bassVideoRef1 = useRef(null)
+  const bassVideoRef2 = useRef(null)
   const chestVideoRef = useRef(null)
-  const videoRef = useRef(null)
+  const flipVideoRef1 = useRef(null)
+  const flipVideoRef2 = useRef(null)
   const startedRef = useRef(false)
   
-  const [bassIndex, setBassIndex] = useState(0)
+  // Track which video element is active (0 or 1) and which sequence index
+  const [bassState, setBassState] = useState({ activePlayer: 0, index: 0 })
   const [chestIndex, setChestIndex] = useState(0)
-  const [flipIndex, setFlipIndex] = useState(0)
+  const [flipState, setFlipState] = useState({ activePlayer: 0, index: 0 })
 
-  // Handle video ended events to cycle through sequences
+  const desiredPlaybackRate = 0.9
+
+  // Preload next video in sequence for bass
   useEffect(() => {
-    const bass = bassVideoRef.current
-    const chest = chestVideoRef.current
-    const backflip = videoRef.current
-    if (!bass || !chest || !backflip) return
+    const nextIndex = (bassState.index + 1) % bassSequence.length
+    const nextPlayer = bassState.activePlayer === 0 ? bassVideoRef2.current : bassVideoRef1.current
+    if (nextPlayer && startedRef.current) {
+      nextPlayer.src = bassSequence[nextIndex]
+      nextPlayer.load()
+      nextPlayer.playbackRate = desiredPlaybackRate
+    }
+  }, [bassState])
 
-    const handleBassEnded = () => {
-      setBassIndex((prev) => (prev + 1) % bassSequence.length)
+  // Preload next video in sequence for flip
+  useEffect(() => {
+    const nextIndex = (flipState.index + 1) % flipSequence.length
+    const nextPlayer = flipState.activePlayer === 0 ? flipVideoRef2.current : flipVideoRef1.current
+    if (nextPlayer && startedRef.current) {
+      nextPlayer.src = flipSequence[nextIndex]
+      nextPlayer.load()
+      nextPlayer.playbackRate = desiredPlaybackRate
+    }
+  }, [flipState])
+
+  // Handle video ended events
+  useEffect(() => {
+    const bass1 = bassVideoRef1.current
+    const bass2 = bassVideoRef2.current
+    const chest = chestVideoRef.current
+    const flip1 = flipVideoRef1.current
+    const flip2 = flipVideoRef2.current
+    if (!bass1 || !bass2 || !chest || !flip1 || !flip2) return
+
+    const handleBassEnded = (fromPlayer) => () => {
+      setBassState((prev) => {
+        const nextIndex = (prev.index + 1) % bassSequence.length
+        const nextPlayer = fromPlayer === 0 ? bass2 : bass1
+        nextPlayer.currentTime = 0
+        nextPlayer.play().catch(() => {})
+        return { activePlayer: fromPlayer === 0 ? 1 : 0, index: nextIndex }
+      })
     }
 
     const handleChestEnded = () => {
       setChestIndex((prev) => (prev + 1) % chestSequence.length)
     }
 
-    const handleFlipEnded = () => {
-      setFlipIndex((prev) => (prev + 1) % flipSequence.length)
+    const handleFlipEnded = (fromPlayer) => () => {
+      setFlipState((prev) => {
+        const nextIndex = (prev.index + 1) % flipSequence.length
+        const nextPlayer = fromPlayer === 0 ? flip2 : flip1
+        nextPlayer.currentTime = 0
+        nextPlayer.play().catch(() => {})
+        return { activePlayer: fromPlayer === 0 ? 1 : 0, index: nextIndex }
+      })
     }
 
-    bass.addEventListener('ended', handleBassEnded)
+    const bass1Handler = handleBassEnded(0)
+    const bass2Handler = handleBassEnded(1)
+    const flip1Handler = handleFlipEnded(0)
+    const flip2Handler = handleFlipEnded(1)
+
+    bass1.addEventListener('ended', bass1Handler)
+    bass2.addEventListener('ended', bass2Handler)
     chest.addEventListener('ended', handleChestEnded)
-    backflip.addEventListener('ended', handleFlipEnded)
+    flip1.addEventListener('ended', flip1Handler)
+    flip2.addEventListener('ended', flip2Handler)
 
     return () => {
-      bass.removeEventListener('ended', handleBassEnded)
+      bass1.removeEventListener('ended', bass1Handler)
+      bass2.removeEventListener('ended', bass2Handler)
       chest.removeEventListener('ended', handleChestEnded)
-      backflip.removeEventListener('ended', handleFlipEnded)
+      flip1.removeEventListener('ended', flip1Handler)
+      flip2.removeEventListener('ended', flip2Handler)
     }
   }, [])
 
-  // Play video when source changes
-  useEffect(() => {
-    const bass = bassVideoRef.current
-    if (bass && startedRef.current) {
-      bass.load()
-      bass.playbackRate = 0.9
-      bass.play().catch(() => {})
-    }
-  }, [bassIndex])
-
+  // Handle chest video source changes (single player, loops)
   useEffect(() => {
     const chest = chestVideoRef.current
     if (chest && startedRef.current) {
       chest.load()
-      chest.playbackRate = 0.9
+      chest.playbackRate = desiredPlaybackRate
       chest.play().catch(() => {})
     }
   }, [chestIndex])
 
-  useEffect(() => {
-    const backflip = videoRef.current
-    if (backflip && startedRef.current) {
-      backflip.load()
-      backflip.playbackRate = 0.9
-      backflip.play().catch(() => {})
-    }
-  }, [flipIndex])
-
   // Initial synchronized start
   useEffect(() => {
-    const bass = bassVideoRef.current
+    const bass1 = bassVideoRef1.current
+    const bass2 = bassVideoRef2.current
     const chest = chestVideoRef.current
-    const backflip = videoRef.current
-    if (!bass || !chest || !backflip) return
+    const flip1 = flipVideoRef1.current
+    const flip2 = flipVideoRef2.current
+    if (!bass1 || !bass2 || !chest || !flip1 || !flip2) return
 
-    const desiredPlaybackRate = 0.9
-    bass.playbackRate = desiredPlaybackRate
-    chest.playbackRate = desiredPlaybackRate
-    backflip.playbackRate = desiredPlaybackRate
+    // Set up initial sources
+    bass1.src = bassSequence[0]
+    bass2.src = bassSequence[1] // Preload next
+    flip1.src = flipSequence[0]
+    flip2.src = flipSequence[1] // Preload next
+
+    ;[bass1, bass2, chest, flip1, flip2].forEach(v => {
+      v.playbackRate = desiredPlaybackRate
+    })
 
     const tryStartTogether = () => {
       if (startedRef.current) return
-      // HAVE_CURRENT_DATA (2) or higher means current frame is available.
-      if (bass.readyState >= 2 && chest.readyState >= 2 && backflip.readyState >= 2) {
+      // Check if primary videos are ready
+      if (bass1.readyState >= 2 && chest.readyState >= 2 && flip1.readyState >= 2) {
         startedRef.current = true
-        bass.currentTime = 0
+        bass1.currentTime = 0
         chest.currentTime = 0
-        backflip.currentTime = 0
-        ;[bass.play(), chest.play(), backflip.play()].forEach((p) => p?.catch(() => {}))
+        flip1.currentTime = 0
+        ;[bass1.play(), chest.play(), flip1.play()].forEach((p) => p?.catch(() => {}))
       }
     }
 
-    bass.addEventListener('canplay', tryStartTogether)
+    bass1.addEventListener('canplay', tryStartTogether)
     chest.addEventListener('canplay', tryStartTogether)
-    backflip.addEventListener('canplay', tryStartTogether)
+    flip1.addEventListener('canplay', tryStartTogether)
     tryStartTogether()
 
     return () => {
-      bass.removeEventListener('canplay', tryStartTogether)
+      bass1.removeEventListener('canplay', tryStartTogether)
       chest.removeEventListener('canplay', tryStartTogether)
-      backflip.removeEventListener('canplay', tryStartTogether)
+      flip1.removeEventListener('canplay', tryStartTogether)
     }
   }, [])
 
@@ -148,19 +188,30 @@ export default function App() {
 
       {/* Video container with relative positioning */}
       <div className="relative w-full mt-6" style={{ height: videoConfig.container.height }}>
-        {/* LeoBass video */}
+        {/* LeoBass video - double buffered */}
         <video
-          ref={bassVideoRef}
+          ref={bassVideoRef1}
           className="absolute origin-top-left"
           style={{ 
             transform: `scale(${videoConfig.bass.scale})`,
             top: videoConfig.bass.top, 
-            left: videoConfig.bass.left 
+            left: videoConfig.bass.left,
+            visibility: bassState.activePlayer === 0 ? 'visible' : 'hidden'
           }}
-          autoPlay
           muted
           playsInline
-          src={bassSequence[bassIndex]}
+        />
+        <video
+          ref={bassVideoRef2}
+          className="absolute origin-top-left"
+          style={{ 
+            transform: `scale(${videoConfig.bass.scale})`,
+            top: videoConfig.bass.top, 
+            left: videoConfig.bass.left,
+            visibility: bassState.activePlayer === 1 ? 'visible' : 'hidden'
+          }}
+          muted
+          playsInline
         />
 
         {/* ChestLoop video */}
@@ -179,19 +230,30 @@ export default function App() {
           src={chestSequence[chestIndex]}
         />
 
-        {/* LeoBackflip video */}
+        {/* LeoBackflip video - double buffered */}
         <video
-          ref={videoRef}
+          ref={flipVideoRef1}
           className="absolute origin-top-left"
           style={{ 
             transform: `scale(${videoConfig.flip.scale})`,
             top: videoConfig.flip.top, 
-            left: videoConfig.flip.left 
+            left: videoConfig.flip.left,
+            visibility: flipState.activePlayer === 0 ? 'visible' : 'hidden'
           }}
-          autoPlay
           muted
           playsInline
-          src={flipSequence[flipIndex]}
+        />
+        <video
+          ref={flipVideoRef2}
+          className="absolute origin-top-left"
+          style={{ 
+            transform: `scale(${videoConfig.flip.scale})`,
+            top: videoConfig.flip.top, 
+            left: videoConfig.flip.left,
+            visibility: flipState.activePlayer === 1 ? 'visible' : 'hidden'
+          }}
+          muted
+          playsInline
         />
       </div>
     </div>
