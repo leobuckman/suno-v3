@@ -25,8 +25,8 @@ const videoConfig = {
   chest: {
     scale: 0.3,
     top: '50px',
-    left: '645px',
-    crop: 'inset(35% 15% 0 10%)', // Crop 30% from left and right sides
+    left: '633px',
+    crop: 'inset(35% 17% 0 17%)', // Crop 30% from left and right sides
   },
   flip: {
     scale: 0.32,
@@ -333,7 +333,7 @@ export default function App() {
     <div className="h-screen overflow-hidden bg-white flex flex-col items-center font-body">
       {/* Header */}
       <div className="text-center pt-12 pb-1">
-        <h1 className="text-5xl text-gray-900 mb-6 font-up font-extrabold tracking-wide">
+        <h1 className="text-5xl text-gray-900 mb-6 font-display font-extrabold tracking-wide">
           Hey, I'm <span className="text-accent">Leo</span>
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -411,6 +411,18 @@ export default function App() {
           muted
           playsInline
         />
+        {/* Text above chest video */}
+        <div
+          className="absolute text-center text-sm text-gray-400 font-medium pointer-events-none"
+          style={{
+            top: '90px',
+            left: '645px',
+            width: '200px',
+          }}
+        >
+          Click to check out some ideas I've got brewing for Suno.
+        </div>
+
         {/* Clickable overlay for Chest */}
         <div
           className="absolute cursor-pointer"
