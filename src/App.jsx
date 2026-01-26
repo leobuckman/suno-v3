@@ -61,6 +61,21 @@ export default function App() {
   const [flipHover, setFlipHover] = useState(false)
 
   const desiredPlaybackRate = 0.9
+  
+  // Synchronization state for bass and flip loops
+  const syncPendingRef = useRef({ bass: false, flip: false })
+  const syncTimeoutRef = useRef(null)
+  const bassStateRef = useRef(bassState)
+  const flipStateRef = useRef(flipState)
+  
+  // Keep refs in sync with state
+  useEffect(() => {
+    bassStateRef.current = bassState
+  }, [bassState])
+  
+  useEffect(() => {
+    flipStateRef.current = flipState
+  }, [flipState])
 
   // Preload next video in sequence for bass
   useEffect(() => {
@@ -95,7 +110,41 @@ export default function App() {
     }
   }, [flipState])
 
-  // Handle video ended events
+  // Periodic sync check to correct drift
+  useEffect(() => {
+    if (!startedRef.current) return
+    
+    const syncInterval = setInterval(() => {
+      const bass1 = bassVideoRef1.current
+      const bass2 = bassVideoRef2.current
+      const flip1 = flipVideoRef1.current
+      const flip2 = flipVideoRef2.current
+      if (!bass1 || !bass2 || !flip1 || !flip2) return
+      
+      const currentBassState = bassStateRef.current
+      const currentFlipState = flipStateRef.current
+      
+      const currentBass = currentBassState.activePlayer === 0 ? bass1 : bass2
+      const currentFlip = currentFlipState.activePlayer === 0 ? flip1 : flip2
+      
+      // Only sync if both are playing and not paused
+      if (currentBass.readyState >= 3 && currentFlip.readyState >= 3 && 
+          !currentBass.paused && !currentFlip.paused) {
+        const timeDiff = Math.abs(currentBass.currentTime - currentFlip.currentTime)
+        
+        // If drift exceeds 0.1 seconds, correct it
+        if (timeDiff > 0.1) {
+          // Use the bass video as the reference (or average them)
+          const targetTime = currentBass.currentTime
+          currentFlip.currentTime = targetTime
+        }
+      }
+    }, 100) // Check every 100ms
+    
+    return () => clearInterval(syncInterval)
+  }, [])
+
+  // Handle video ended events with synchronization
   useEffect(() => {
     const bass1 = bassVideoRef1.current
     const bass2 = bassVideoRef2.current
@@ -105,14 +154,57 @@ export default function App() {
     const flip2 = flipVideoRef2.current
     if (!bass1 || !bass2 || !chest1 || !chest2 || !flip1 || !flip2) return
 
-    const handleBassEnded = (fromPlayer) => () => {
-      setBassState((prev) => {
-        const nextIndex = (prev.index + 1) % bassSequence.length
-        const nextPlayer = fromPlayer === 0 ? bass2 : bass1
-        nextPlayer.currentTime = 0
-        nextPlayer.play().catch(() => {})
-        return { activePlayer: fromPlayer === 0 ? 1 : 0, index: nextIndex }
+    // Synchronized transition function for bass and flip loops
+    const performSynchronizedTransition = () => {
+      if (!bass1 || !bass2 || !flip1 || !flip2) return
+
+      const currentBassState = bassStateRef.current
+      const currentFlipState = flipStateRef.current
+      
+      // Calculate next indices
+      const nextBassIndex = (currentBassState.index + 1) % bassSequence.length
+      const nextFlipIndex = (currentFlipState.index + 1) % flipSequence.length
+      
+      // Get next players
+      const nextBass = currentBassState.activePlayer === 0 ? bass2 : bass1
+      const nextFlip = currentFlipState.activePlayer === 0 ? flip2 : flip1
+      
+      // Reset and start both together
+      nextBass.currentTime = 0
+      nextFlip.currentTime = 0
+      
+      // Use requestAnimationFrame to ensure they start at the same time
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          Promise.all([
+            nextBass.play().catch(() => {}),
+            nextFlip.play().catch(() => {})
+          ]).then(() => {
+            setBassState({ activePlayer: currentBassState.activePlayer === 0 ? 1 : 0, index: nextBassIndex })
+            setFlipState({ activePlayer: currentFlipState.activePlayer === 0 ? 1 : 0, index: nextFlipIndex })
+            syncPendingRef.current = { bass: false, flip: false }
+          })
+        })
       })
+    }
+
+    const handleBassEnded = (fromPlayer) => () => {
+      syncPendingRef.current.bass = true
+      
+      // If flip is also pending, transition together
+      if (syncPendingRef.current.flip) {
+        performSynchronizedTransition()
+      } else {
+        // Wait a short time for flip to catch up, then force sync
+        if (syncTimeoutRef.current) {
+          clearTimeout(syncTimeoutRef.current)
+        }
+        syncTimeoutRef.current = setTimeout(() => {
+          if (syncPendingRef.current.bass || syncPendingRef.current.flip) {
+            performSynchronizedTransition()
+          }
+        }, 50) // Small timeout to allow flip to catch up
+      }
     }
 
     const handleChestEnded = (fromPlayer) => () => {
@@ -126,13 +218,22 @@ export default function App() {
     }
 
     const handleFlipEnded = (fromPlayer) => () => {
-      setFlipState((prev) => {
-        const nextIndex = (prev.index + 1) % flipSequence.length
-        const nextPlayer = fromPlayer === 0 ? flip2 : flip1
-        nextPlayer.currentTime = 0
-        nextPlayer.play().catch(() => {})
-        return { activePlayer: fromPlayer === 0 ? 1 : 0, index: nextIndex }
-      })
+      syncPendingRef.current.flip = true
+      
+      // If bass is also pending, transition together
+      if (syncPendingRef.current.bass) {
+        performSynchronizedTransition()
+      } else {
+        // Wait a short time for bass to catch up, then force sync
+        if (syncTimeoutRef.current) {
+          clearTimeout(syncTimeoutRef.current)
+        }
+        syncTimeoutRef.current = setTimeout(() => {
+          if (syncPendingRef.current.bass || syncPendingRef.current.flip) {
+            performSynchronizedTransition()
+          }
+        }, 50) // Small timeout to allow bass to catch up
+      }
     }
 
     const bass1Handler = handleBassEnded(0)
@@ -156,6 +257,9 @@ export default function App() {
       chest2.removeEventListener('ended', chest2Handler)
       flip1.removeEventListener('ended', flip1Handler)
       flip2.removeEventListener('ended', flip2Handler)
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current)
+      }
     }
   }, [])
 
@@ -170,8 +274,11 @@ export default function App() {
     if (!bass1 || !bass2 || !chest1 || !chest2 || !flip1 || !flip2) return
 
     // Mute all videos when a page is displayed, unmute when no page is displayed
+    // Bass loops are always muted
     const shouldMute = activeView !== null
-    ;[bass1, bass2, chest1, chest2, flip1, flip2].forEach(v => {
+    bass1.muted = true
+    bass2.muted = true
+    ;[chest1, chest2, flip1, flip2].forEach(v => {
       v.muted = shouldMute
     })
   }, [activeView])
