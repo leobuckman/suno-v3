@@ -159,6 +159,23 @@ export default function App() {
     }
   }, [])
 
+  // Mute/unmute videos when a page is displayed
+  useEffect(() => {
+    const bass1 = bassVideoRef1.current
+    const bass2 = bassVideoRef2.current
+    const chest1 = chestVideoRef1.current
+    const chest2 = chestVideoRef2.current
+    const flip1 = flipVideoRef1.current
+    const flip2 = flipVideoRef2.current
+    if (!bass1 || !bass2 || !chest1 || !chest2 || !flip1 || !flip2) return
+
+    // Mute all videos when a page is displayed, unmute when no page is displayed
+    const shouldMute = activeView !== null
+    ;[bass1, bass2, chest1, chest2, flip1, flip2].forEach(v => {
+      v.muted = shouldMute
+    })
+  }, [activeView])
+
   // Initial synchronized start
   useEffect(() => {
     const bass1 = bassVideoRef1.current
