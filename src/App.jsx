@@ -1,9 +1,13 @@
 import { useRef, useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import Musician from './Musician'
+import KeysSection from './Keys/KeysSection'
+import Builder from './Builder'
 
 // Sequence: Loop1 -> Loop1 -> Loop2 -> repeat
-const bassSequence = ['/BassLoop1.mp4', '/BassLoop1.mp4', '/BassLoop2.mp4']
-const chestSequence = ['/BoilingPot.mp4']
-const flipSequence = ['/FlipLoop1.mp4', '/FlipLoop1.mp4', '/FlipLoop2.mp4']
+const bassSequence = ['/Loops/BassLoop1.mp4', '/Loops/BassLoop1.mp4', '/Loops/BassLoop2.mp4']
+const chestSequence = ['/Loops/BoilingPot.mp4']
+const flipSequence = ['/Loops/FlipLoop1.mp4', '/Loops/FlipLoop1.mp4', '/Loops/FlipLoop2.mp4']
 
 // ========== VIDEO LAYOUT CONFIG ==========
 // Each video has FIXED position - changing one won't affect others
@@ -16,6 +20,7 @@ const videoConfig = {
     scale: 0.3,
     top: '-30px',
     left: '230px',
+    crop: 'inset(15% 0 0 0)', // Crop 30% from left and right sides
   },
   chest: {
     scale: 0.3,
@@ -27,6 +32,7 @@ const videoConfig = {
     scale: 0.32,
     top: '-30px',
     left: '910px',
+    crop: 'inset(15% 0 0 0)',
   },
 }
 // ==========================================
@@ -45,6 +51,14 @@ export default function App() {
   const [bassState, setBassState] = useState({ activePlayer: 0, index: 0 })
   const [chestState, setChestState] = useState({ activePlayer: 0, index: 0 })
   const [flipState, setFlipState] = useState({ activePlayer: 0, index: 0 })
+  
+  // Track which view is open (null, 'musician', 'keys', 'builder')
+  const [activeView, setActiveView] = useState(null)
+  
+  // Track hover state for videos
+  const [bassHover, setBassHover] = useState(false)
+  const [chestHover, setChestHover] = useState(false)
+  const [flipHover, setFlipHover] = useState(false)
 
   const desiredPlaybackRate = 0.9
 
@@ -208,11 +222,12 @@ export default function App() {
         {/* LeoBass video - double buffered */}
         <video
           ref={bassVideoRef1}
-          className="absolute origin-top-left"
+          className="absolute origin-top-left transition-transform duration-200"
           style={{ 
-            transform: `scale(${videoConfig.bass.scale})`,
+            transform: `scale(${videoConfig.bass.scale}) translateY(${bassHover ? '-25px' : '0'})`,
             top: videoConfig.bass.top, 
             left: videoConfig.bass.left,
+            clipPath: videoConfig.bass.crop,
             visibility: bassState.activePlayer === 0 ? 'visible' : 'hidden'
           }}
           muted
@@ -220,23 +235,37 @@ export default function App() {
         />
         <video
           ref={bassVideoRef2}
-          className="absolute origin-top-left"
+          className="absolute origin-top-left transition-transform duration-200"
           style={{ 
-            transform: `scale(${videoConfig.bass.scale})`,
+            transform: `scale(${videoConfig.bass.scale}) translateY(${bassHover ? '-25px' : '0'})`,
             top: videoConfig.bass.top, 
             left: videoConfig.bass.left,
+            clipPath: videoConfig.bass.crop,
             visibility: bassState.activePlayer === 1 ? 'visible' : 'hidden'
           }}
           muted
           playsInline
         />
+        {/* Clickable overlay for Bass */}
+        <div
+          className="absolute cursor-pointer"
+          style={{
+            top: videoConfig.bass.top,
+            left: videoConfig.bass.left,
+            width: '320px',
+            height: '500px',
+          }}
+          onClick={() => setActiveView('musician')}
+          onMouseEnter={() => setBassHover(true)}
+          onMouseLeave={() => setBassHover(false)}
+        />
 
         {/* BoilingPot video - double buffered */}
         <video
           ref={chestVideoRef1}
-          className="absolute origin-top-left"
+          className="absolute origin-top-left transition-transform duration-200"
           style={{ 
-            transform: `scale(${videoConfig.chest.scale})`,
+            transform: `scale(${videoConfig.chest.scale}) translateY(${chestHover ? '-25px' : '0'})`,
             top: videoConfig.chest.top, 
             left: videoConfig.chest.left,
             clipPath: videoConfig.chest.crop,
@@ -247,9 +276,9 @@ export default function App() {
         />
         <video
           ref={chestVideoRef2}
-          className="absolute origin-top-left"
+          className="absolute origin-top-left transition-transform duration-200"
           style={{ 
-            transform: `scale(${videoConfig.chest.scale})`,
+            transform: `scale(${videoConfig.chest.scale}) translateY(${chestHover ? '-25px' : '0'})`,
             top: videoConfig.chest.top, 
             left: videoConfig.chest.left,
             clipPath: videoConfig.chest.crop,
@@ -258,33 +287,92 @@ export default function App() {
           muted
           playsInline
         />
+        {/* Clickable overlay for Chest */}
+        <div
+          className="absolute cursor-pointer"
+          style={{
+            top: videoConfig.chest.top,
+            left: videoConfig.chest.left,
+            width: '200px',
+            height: '500px',
+          }}
+          onClick={() => setActiveView('keys')}
+          onMouseEnter={() => setChestHover(true)}
+          onMouseLeave={() => setChestHover(false)}
+        />
 
         {/* LeoBackflip video - double buffered */}
         <video
           ref={flipVideoRef1}
-          className="absolute origin-top-left"
+          className="absolute origin-top-left transition-transform duration-200"
           style={{ 
-            transform: `scale(${videoConfig.flip.scale})`,
+            transform: `scale(${videoConfig.flip.scale}) translateY(${flipHover ? '-25px' : '0'})`,
             top: videoConfig.flip.top, 
             left: videoConfig.flip.left,
+            clipPath: videoConfig.flip.crop,
             visibility: flipState.activePlayer === 0 ? 'visible' : 'hidden'
           }}
-          muted
           playsInline
         />
         <video
           ref={flipVideoRef2}
-          className="absolute origin-top-left"
+          className="absolute origin-top-left transition-transform duration-200"
           style={{ 
-            transform: `scale(${videoConfig.flip.scale})`,
+            transform: `scale(${videoConfig.flip.scale}) translateY(${flipHover ? '-25px' : '0'})`,
             top: videoConfig.flip.top, 
             left: videoConfig.flip.left,
+            clipPath: videoConfig.flip.crop,
             visibility: flipState.activePlayer === 1 ? 'visible' : 'hidden'
           }}
-          muted
           playsInline
         />
+        {/* Clickable overlay for Flip */}
+        <div
+          className="absolute cursor-pointer"
+          style={{
+            top: videoConfig.flip.top,
+            left: videoConfig.flip.left,
+            width: '320px',
+            height: '500px',
+          }}
+          onClick={() => setActiveView('builder')}
+          onMouseEnter={() => setFlipHover(true)}
+          onMouseLeave={() => setFlipHover(false)}
+        />
       </div>
+
+      {/* Full Screen Panel */}
+      <AnimatePresence>
+        {activeView && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-white flex flex-col"
+            initial={{ y: '100%' }}
+            animate={{ y: 0 }}
+            exit={{ y: '100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+          >
+            {/* Header with back button */}
+            <div className="sticky top-0 bg-white z-10 px-6 py-4 border-b border-gray-100">
+              <button 
+                onClick={() => setActiveView(null)}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span className="font-medium">Back</span>
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto px-6 py-8">
+              {activeView === 'musician' && <Musician />}
+              {activeView === 'keys' && <KeysSection />}
+              {activeView === 'builder' && <Builder />}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
