@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Play } from 'lucide-react'
 import Musician from './Musician'
 import KeysSection from './Keys/KeysSection'
 import ProgressionSection from './Progression/Progression'
@@ -24,7 +24,7 @@ const videoConfig = {
     scale: 0.4,
     top: '-137px',
     translateX: '-610px', // offset from center (negative = left of center)
-    crop: 'inset(15% 0 0 0)', // Crop 30% from left and right sides
+    crop: 'inset(20% 0 0 0)', // Crop 30% from left and right sides
   },
   chest: {
     scale: 0.38,
@@ -54,7 +54,7 @@ const textConfig = {
   },
   builder: {
     top: '370px',
-    translateX: '200px', // offset from center
+    translateX: '220px', // offset from center
     width: '320px',
   },
 }
@@ -71,7 +71,8 @@ export default function App() {
   const audioRef = useRef(null)
   const startedRef = useRef(false)
   const audioFirstPlayRef = useRef(true) // Track if this is the first audio playback
-  const [showStartButton, setShowStartButton] = useState(true) // Track if start button should be shown
+  const audioRestartTimeoutRef = useRef(null) // Track audio restart timeout
+  const [isPlaying, setIsPlaying] = useState(false) // Track if videos/audio are playing
   const [readyToStart, setReadyToStart] = useState(false) // Track if all media is ready to play
   
   // Track which video element is active (0 or 1) and which sequence index
@@ -306,11 +307,16 @@ export default function App() {
     if (!audio) return
 
     const handleAudioEnded = () => {
+      // Only restart if we're currently in playing state
+      if (!isPlaying) return
+
       // After first playback, wait 3 seconds before restarting from 0
       audioFirstPlayRef.current = false
-      setTimeout(() => {
-        audio.currentTime = 0
-        audio.play().catch(() => {})
+      audioRestartTimeoutRef.current = setTimeout(() => {
+        if (isPlaying) { // Check again in case state changed during timeout
+          audio.currentTime = 0
+          audio.play().catch(() => {})
+        }
       }, 3100) // 3 second pause
     }
 
@@ -318,8 +324,11 @@ export default function App() {
 
     return () => {
       audio.removeEventListener('ended', handleAudioEnded)
+      if (audioRestartTimeoutRef.current) {
+        clearTimeout(audioRestartTimeoutRef.current)
+      }
     }
-  }, [])
+  }, [isPlaying])
 
   // Reset section index when opening keys view
   useEffect(() => {
@@ -399,24 +408,23 @@ export default function App() {
     }
   }, [])
 
-  // Function to start all media together
-  const handleStartAll = () => {
+  // Function to start playback (no pause)
+  const handlePlay = () => {
     const bass1 = bassVideoRef1.current
     const chest1 = chestVideoRef1.current
     const flip1 = flipVideoRef1.current
     const audio = audioRef.current
     if (!bass1 || !chest1 || !flip1 || !audio || startedRef.current) return
 
+    // First time starting
     startedRef.current = true
-    setShowStartButton(false)
-
     bass1.currentTime = 0
     chest1.currentTime = 0
     flip1.currentTime = 0
-    // Start audio at 0.5 seconds for first playback only
     audio.currentTime = 0.5
     audioFirstPlayRef.current = true
 
+    setIsPlaying(true) // Set state before playing
     ;[bass1.play(), chest1.play(), flip1.play(), audio.play()].forEach((p) => p?.catch(() => {}))
   }
 
@@ -431,28 +439,92 @@ export default function App() {
           <span>Hi, I'm Leo</span>
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-I'm interested in joining Suno as a Product Designer because it sits at the intersection of the two worlds that define me: software and music. I recently graduated from Northwestern University with a dual degree in Computer Science (B.A.) and Music Performance (B.M.).<br />        </p>
-        <div className="flex gap-4 justify-center items-center">
-          <a
-            href="mailto:leo.s.buckman@gmail.com"
-            className="inline-block mt-6 px-6 py-3 bg-gray-900 text-white font-medium rounded-full hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
-          >
-            Contact Me
-          </a>
-          {showStartButton && (
-            <button
-              onClick={handleStartAll}
+I'm interested in joining Suno as a Product Designer because it sits at the intersection of the two worlds that I live between: software and music. I recently graduated from Northwestern University with a dual degree in Computer Science (B.A.) and Music Performance (B.M.).<br />        </p>
+        <div className="flex items-center justify-center mt-6">
+          {!isPlaying ? (
+            <motion.button
+              onClick={handlePlay}
               disabled={!readyToStart}
-              className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="flex items-center justify-center text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{
+                background: 'linear-gradient(135deg, #F7A505 0%, #FD2D6C 50%, #F14925 100%)'
+              }}
+              initial={false}
+              animate={{
+                width: readyToStart ? '48px' : '48px',
+                height: '48px',
+                paddingLeft: '0px',
+                paddingRight: '0px'
+              }}
+              whileHover={readyToStart ? { scale: 1.1 } : {}}
+              whileTap={readyToStart ? { scale: 0.95 } : {}}
             >
-              {readyToStart ? 'Start Experience' : 'Loading...'}
-            </button>
+              <AnimatePresence mode="wait">
+                {!readyToStart ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"
+                  />
+                ) : (
+                  <motion.div
+                    key="play"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, scale: 0 }}
+                  >
+                    <Play size={20} fill="white" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          ) : (
+            <motion.a
+              href="mailto:leo.s.buckman@gmail.com"
+              className="flex items-center justify-center text-white font-medium rounded-full transition-all overflow-hidden whitespace-nowrap"
+              style={{
+                background: 'linear-gradient(135deg, #F7A505 0%, #FD2D6C 50%, #F14925 100%)'
+              }}
+              initial={{
+                width: 48,
+                height: 48,
+                paddingLeft: 0,
+                paddingRight: 0
+              }}
+              animate={{
+                width: 152,
+                height: 48,
+                paddingLeft: 24,
+                paddingRight: 24
+              }}
+              transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <motion.span
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.15, duration: 0.2 }}
+                className="whitespace-nowrap"
+              >
+                Contact Me
+              </motion.span>
+            </motion.a>
           )}
         </div>
       </div>
 
       {/* Video container with relative positioning */}
-      <div className="relative w-full mx-auto mt-6" style={{ height: videoConfig.container.height, maxWidth: videoConfig.container.maxWidth }}>
+      <div
+        className="relative w-full mx-auto mt-6 transition-opacity duration-300"
+        style={{
+          height: videoConfig.container.height,
+          maxWidth: videoConfig.container.maxWidth,
+          opacity: isPlaying ? 1 : 0.4
+        }}
+      >
         {/* LeoBass video - double buffered */}
         <video
           ref={bassVideoRef1}
