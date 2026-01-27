@@ -71,6 +71,8 @@ export default function App() {
   const audioRef = useRef(null)
   const startedRef = useRef(false)
   const audioFirstPlayRef = useRef(true) // Track if this is the first audio playback
+  const [showStartButton, setShowStartButton] = useState(true) // Track if start button should be shown
+  const [readyToStart, setReadyToStart] = useState(false) // Track if all media is ready to play
   
   // Track which video element is active (0 or 1) and which sequence index
   const [bassState, setBassState] = useState({ activePlayer: 0, index: 0 })
@@ -348,7 +350,7 @@ export default function App() {
     audio.muted = shouldMute
   }, [activeView])
 
-  // Initial synchronized start
+  // Initial setup - load media but don't auto-start
   useEffect(() => {
     const bass1 = bassVideoRef1.current
     const bass2 = bassVideoRef2.current
@@ -376,34 +378,47 @@ export default function App() {
     })
     audio.playbackRate = audioPlaybackRate
 
-    const tryStartTogether = () => {
-      if (startedRef.current) return
+    const checkIfReady = () => {
       // Check if primary videos and audio are ready
       if (bass1.readyState >= 2 && chest1.readyState >= 2 && flip1.readyState >= 2 && audio.readyState >= 2) {
-        startedRef.current = true
-        bass1.currentTime = 0
-        chest1.currentTime = 0
-        flip1.currentTime = 0
-        // Start audio at 0.2 seconds for first playback only
-        audio.currentTime = 0.5
-        audioFirstPlayRef.current = true
-        ;[bass1.play(), chest1.play(), flip1.play(), audio.play()].forEach((p) => p?.catch(() => {}))
+        setReadyToStart(true)
       }
     }
 
-    bass1.addEventListener('canplay', tryStartTogether)
-    chest1.addEventListener('canplay', tryStartTogether)
-    flip1.addEventListener('canplay', tryStartTogether)
-    audio.addEventListener('canplay', tryStartTogether)
-    tryStartTogether()
+    bass1.addEventListener('canplay', checkIfReady)
+    chest1.addEventListener('canplay', checkIfReady)
+    flip1.addEventListener('canplay', checkIfReady)
+    audio.addEventListener('canplay', checkIfReady)
+    checkIfReady()
 
     return () => {
-      bass1.removeEventListener('canplay', tryStartTogether)
-      chest1.removeEventListener('canplay', tryStartTogether)
-      flip1.removeEventListener('canplay', tryStartTogether)
-      audio.removeEventListener('canplay', tryStartTogether)
+      bass1.removeEventListener('canplay', checkIfReady)
+      chest1.removeEventListener('canplay', checkIfReady)
+      flip1.removeEventListener('canplay', checkIfReady)
+      audio.removeEventListener('canplay', checkIfReady)
     }
   }, [])
+
+  // Function to start all media together
+  const handleStartAll = () => {
+    const bass1 = bassVideoRef1.current
+    const chest1 = chestVideoRef1.current
+    const flip1 = flipVideoRef1.current
+    const audio = audioRef.current
+    if (!bass1 || !chest1 || !flip1 || !audio || startedRef.current) return
+
+    startedRef.current = true
+    setShowStartButton(false)
+
+    bass1.currentTime = 0
+    chest1.currentTime = 0
+    flip1.currentTime = 0
+    // Start audio at 0.5 seconds for first playback only
+    audio.currentTime = 0.5
+    audioFirstPlayRef.current = true
+
+    ;[bass1.play(), chest1.play(), flip1.play(), audio.play()].forEach((p) => p?.catch(() => {}))
+  }
 
   return (
     <div className="h-screen overflow-hidden bg-white flex flex-col items-center font-body">
@@ -417,12 +432,23 @@ export default function App() {
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
 I'm interested in joining Suno as a Product Designer because it sits at the intersection of the two worlds that define me: software and music. I recently graduated from Northwestern University with a dual degree in Computer Science (B.A.) and Music Performance (B.M.).<br />        </p>
-        <a
-          href="mailto:leo.s.buckman@gmail.com"
-          className="inline-block mt-6 px-6 py-3 bg-gray-900 text-white font-medium rounded-full hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
-        >
-          Contact Me
-        </a>
+        <div className="flex gap-4 justify-center items-center">
+          <a
+            href="mailto:leo.s.buckman@gmail.com"
+            className="inline-block mt-6 px-6 py-3 bg-gray-900 text-white font-medium rounded-full hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
+          >
+            Contact Me
+          </a>
+          {showStartButton && (
+            <button
+              onClick={handleStartAll}
+              disabled={!readyToStart}
+              className="inline-block mt-6 px-6 py-3 bg-blue-600 text-white font-medium rounded-full hover:bg-blue-700 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+            >
+              {readyToStart ? 'Start Experience' : 'Loading...'}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Video container with relative positioning */}
