@@ -439,7 +439,7 @@ export default function App() {
           <span>Hi, I'm Leo</span>
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-I'm interested in joining Suno as a Product Designer because it sits at the intersection of the two worlds that I live between: software and music. I recently graduated from Northwestern University with a dual degree in Computer Science (B.A.) and Music Performance (B.M.).<br />        </p>
+I'm interested in joining Suno as a Product Designer because it sits at the intersection of my two primary interests: software and music. I recently graduated from Northwestern University with a dual degree in Computer Science (B.A.) and Music Performance (B.M.).<br />        </p>
         <div className="flex items-center justify-center mt-6">
           {!isPlaying ? (
             <motion.button
