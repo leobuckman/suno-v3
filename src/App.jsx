@@ -279,16 +279,18 @@ export default function App() {
     }
   }, [])
 
-  // Handle audio looping - first loop starts at 0.5s, subsequent loops start at 0s
+  // Handle audio looping - first loop starts at 0.5s, subsequent loops start at 0s with 4s pause
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
 
     const handleAudioEnded = () => {
-      // After first playback, all subsequent loops start from 0
+      // After first playback, wait 3 seconds before restarting from 0
       audioFirstPlayRef.current = false
-      audio.currentTime = 0
-      audio.play().catch(() => {})
+      setTimeout(() => {
+        audio.currentTime = 0
+        audio.play().catch(() => {})
+      }, 3000) // 3 second pause
     }
 
     audio.addEventListener('ended', handleAudioEnded)
