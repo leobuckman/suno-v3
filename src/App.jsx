@@ -97,7 +97,7 @@ export default function App() {
   const [flipHover, setFlipHover] = useState(false)
 
   const desiredPlaybackRate = 1.0
-  const chestPlaybackRate = desiredPlaybackRate * 1.2 // 1.08x speed
+  const chestPlaybackRate = desiredPlaybackRate * 1.3 // 1.08x speed
   const audioPlaybackRate = 1.13 // Slightly faster to match video loops
   
   // Synchronization state for bass and flip loops
