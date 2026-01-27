@@ -21,20 +21,20 @@ const videoConfig = {
     maxWidth: '1280px', // max width for centered layout (prevents uncentering on zoom)
   },
   bass: {
-    scale: 0.3,
-    top: '-10px',
-    translateX: '-500px', // offset from center (negative = left of center)
+    scale: 0.4,
+    top: '-50px',
+    translateX: '-610px', // offset from center (negative = left of center)
     crop: 'inset(15% 0 0 0)', // Crop 30% from left and right sides
   },
   chest: {
-    scale: 0.3,
-    top: '37px',
-    translateX: '-100px', // offset from center
+    scale: 0.38,
+    top: '30px',
+    translateX: '-130px', // offset from center
     crop: 'inset(35% 17% 0 17%)', // Crop 30% from left and right sides
   },
   flip: {
-    scale: 0.32,
-    top: '20px',
+    scale: 0.44,
+    top: '-30px',
     translateX: '200px', // offset from center (positive = right of center)
     crop: 'inset(15% 0 0 0)',
   },
@@ -357,7 +357,7 @@ export default function App() {
       {/* Header */}
       <div className="text-center pt-12 pb-1">
         <h1 className="text-5xl text-gray-900 mb-6 font-display font-extrabold tracking-wide">
-          Hey, I'm <span className="text-accent">Leo</span>
+          <span>Leo Buckman</span>
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
         I'm interested in joining Suno as a Product Designer because it sits at the intersection of software and music. I recently graduated from Northwestern with a dual degree in <strong>Computer Science</strong> and <strong>Music Performance</strong>.
@@ -441,7 +441,7 @@ export default function App() {
           style={{
             top: '90px',
             left: '50%',
-            transform: `translateX(calc(${videoConfig.chest.translateX}))`,
+            transform: `translateX(calc(${videoConfig.chest.translateX} + 20px))`,
             width: '220px',
           }}
         >
