@@ -49,7 +49,9 @@ export default function App() {
   const chestVideoRef2 = useRef(null)
   const flipVideoRef1 = useRef(null)
   const flipVideoRef2 = useRef(null)
+  const audioRef = useRef(null)
   const startedRef = useRef(false)
+  const audioFirstPlayRef = useRef(true) // Track if this is the first audio playback
   
   // Track which video element is active (0 or 1) and which sequence index
   const [bassState, setBassState] = useState({ activePlayer: 0, index: 0 })
@@ -72,8 +74,9 @@ export default function App() {
   const [chestHover, setChestHover] = useState(false)
   const [flipHover, setFlipHover] = useState(false)
 
-  const desiredPlaybackRate = 0.9
+  const desiredPlaybackRate = 1.0
   const chestPlaybackRate = desiredPlaybackRate * 1.2 // 1.08x speed
+  const audioPlaybackRate = 1.13 // Slightly faster to match video loops
   
   // Synchronization state for bass and flip loops
   const syncPendingRef = useRef({ bass: false, flip: false })
@@ -276,6 +279,25 @@ export default function App() {
     }
   }, [])
 
+  // Handle audio looping - first loop starts at 0.5s, subsequent loops start at 0s
+  useEffect(() => {
+    const audio = audioRef.current
+    if (!audio) return
+
+    const handleAudioEnded = () => {
+      // After first playback, all subsequent loops start from 0
+      audioFirstPlayRef.current = false
+      audio.currentTime = 0
+      audio.play().catch(() => {})
+    }
+
+    audio.addEventListener('ended', handleAudioEnded)
+
+    return () => {
+      audio.removeEventListener('ended', handleAudioEnded)
+    }
+  }, [])
+
   // Reset section index when opening keys view
   useEffect(() => {
     if (activeView === 'keys') {
@@ -283,7 +305,7 @@ export default function App() {
     }
   }, [activeView])
 
-  // Mute/unmute videos when a page is displayed
+  // Mute/unmute videos and audio when a page is displayed
   useEffect(() => {
     const bass1 = bassVideoRef1.current
     const bass2 = bassVideoRef2.current
@@ -291,9 +313,10 @@ export default function App() {
     const chest2 = chestVideoRef2.current
     const flip1 = flipVideoRef1.current
     const flip2 = flipVideoRef2.current
-    if (!bass1 || !bass2 || !chest1 || !chest2 || !flip1 || !flip2) return
+    const audio = audioRef.current
+    if (!bass1 || !bass2 || !chest1 || !chest2 || !flip1 || !flip2 || !audio) return
 
-    // Mute all videos when a page is displayed, unmute when no page is displayed
+    // Mute all videos and audio when a page is displayed, unmute when no page is displayed
     // Bass loops are always muted
     const shouldMute = activeView !== null
     bass1.muted = true
@@ -301,6 +324,7 @@ export default function App() {
     ;[chest1, chest2, flip1, flip2].forEach(v => {
       v.muted = shouldMute
     })
+    audio.muted = shouldMute
   }, [activeView])
 
   // Initial synchronized start
@@ -311,7 +335,8 @@ export default function App() {
     const chest2 = chestVideoRef2.current
     const flip1 = flipVideoRef1.current
     const flip2 = flipVideoRef2.current
-    if (!bass1 || !bass2 || !chest1 || !chest2 || !flip1 || !flip2) return
+    const audio = audioRef.current
+    if (!bass1 || !bass2 || !chest1 || !chest2 || !flip1 || !flip2 || !audio) return
 
     // Set up initial sources
     bass1.src = bassSequence[0]
@@ -320,6 +345,7 @@ export default function App() {
     chest2.src = chestSequence[0] // Preload same (only one in sequence)
     flip1.src = flipSequence[0]
     flip2.src = flipSequence[1] // Preload next
+    audio.src = '/audio/SunoTrack.wav'
 
     ;[bass1, bass2, flip1, flip2].forEach(v => {
       v.playbackRate = desiredPlaybackRate
@@ -327,33 +353,42 @@ export default function App() {
     ;[chest1, chest2].forEach(v => {
       v.playbackRate = chestPlaybackRate
     })
+    audio.playbackRate = audioPlaybackRate
 
     const tryStartTogether = () => {
       if (startedRef.current) return
-      // Check if primary videos are ready
-      if (bass1.readyState >= 2 && chest1.readyState >= 2 && flip1.readyState >= 2) {
+      // Check if primary videos and audio are ready
+      if (bass1.readyState >= 2 && chest1.readyState >= 2 && flip1.readyState >= 2 && audio.readyState >= 2) {
         startedRef.current = true
         bass1.currentTime = 0
         chest1.currentTime = 0
         flip1.currentTime = 0
-        ;[bass1.play(), chest1.play(), flip1.play()].forEach((p) => p?.catch(() => {}))
+        // Start audio at 0.2 seconds for first playback only
+        audio.currentTime = 0.5
+        audioFirstPlayRef.current = true
+        ;[bass1.play(), chest1.play(), flip1.play(), audio.play()].forEach((p) => p?.catch(() => {}))
       }
     }
 
     bass1.addEventListener('canplay', tryStartTogether)
     chest1.addEventListener('canplay', tryStartTogether)
     flip1.addEventListener('canplay', tryStartTogether)
+    audio.addEventListener('canplay', tryStartTogether)
     tryStartTogether()
 
     return () => {
       bass1.removeEventListener('canplay', tryStartTogether)
       chest1.removeEventListener('canplay', tryStartTogether)
       flip1.removeEventListener('canplay', tryStartTogether)
+      audio.removeEventListener('canplay', tryStartTogether)
     }
   }, [])
 
   return (
     <div className="h-screen overflow-hidden bg-white flex flex-col items-center font-body">
+      {/* Hidden audio element for background music */}
+      <audio ref={audioRef} />
+
       {/* Header */}
       <div className="text-center pt-12 pb-1">
         <h1 className="text-5xl text-gray-900 mb-6 font-display font-extrabold tracking-wide">
