@@ -49,7 +49,7 @@ const textConfig = {
   },
   pot: {
     top: '370px',
-    translateX: '-130px', // offset from center
+    translateX: '-110px', // offset from center
     width: '220px',
   },
   builder: {
