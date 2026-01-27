@@ -22,21 +22,40 @@ const videoConfig = {
   },
   bass: {
     scale: 0.4,
-    top: '-50px',
+    top: '-140px',
     translateX: '-610px', // offset from center (negative = left of center)
     crop: 'inset(15% 0 0 0)', // Crop 30% from left and right sides
   },
   chest: {
     scale: 0.38,
-    top: '30px',
-    translateX: '-130px', // offset from center
+    top: '-55px',
+    translateX: '-140px', // offset from center
     crop: 'inset(35% 17% 0 17%)', // Crop 30% from left and right sides
   },
   flip: {
     scale: 0.44,
-    top: '-30px',
+    top: '-120px',
     translateX: '200px', // offset from center (positive = right of center)
     crop: 'inset(15% 0 0 0)',
+  },
+}
+
+// ========== TEXT LABEL CONFIG ==========
+const textConfig = {
+  musician: {
+    top: '370px',
+    translateX: '-550px', // offset from center
+    width: '320px',
+  },
+  pot: {
+    top: '370px',
+    translateX: '-130px', // offset from center
+    width: '220px',
+  },
+  builder: {
+    top: '370px',
+    translateX: '200px', // offset from center
+    width: '320px',
   },
 }
 // ==========================================
@@ -290,7 +309,7 @@ export default function App() {
       setTimeout(() => {
         audio.currentTime = 0
         audio.play().catch(() => {})
-      }, 3000) // 3 second pause
+      }, 3100) // 3 second pause
     }
 
     audio.addEventListener('ended', handleAudioEnded)
@@ -393,12 +412,17 @@ export default function App() {
 
       {/* Header */}
       <div className="text-center pt-12 pb-1">
-        <h1 className="text-5xl text-gray-900 mb-6 font-display font-extrabold tracking-wide">
-          <span>Leo Buckman</span>
+        <h1 className="text-4xl text-gray-900 mb-4 font-display font-extrabold tracking-wide">
+          <span>Hi, I'm Leo</span>
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-        I'm interested in joining Suno as a Product Designer because it sits at the intersection of software and music. I recently graduated from Northwestern with a dual degree in <strong>Computer Science</strong> and <strong>Music Performance</strong>.
-        </p>
+I'm interested in joining Suno as a Product Designer because it sits at the intersection of the two worlds that define me: software and music. I recently graduated from Northwestern University with a dual degree in Computer Science (B.A.) and Music Performance (B.M.).<br />        </p>
+        <a
+          href="mailto:your.email@example.com"
+          className="inline-block mt-6 px-6 py-3 bg-gray-900 text-white font-medium rounded-full hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
+        >
+          Contact Me
+        </a>
       </div>
 
       {/* Video container with relative positioning */}
@@ -444,6 +468,18 @@ export default function App() {
           onMouseEnter={() => setBassHover(true)}
           onMouseLeave={() => setBassHover(false)}
         />
+        {/* Text below bass video */}
+        <div
+          className="absolute text-center text-sm text-gray-400 font-medium pointer-events-none"
+          style={{
+            top: textConfig.musician.top,
+            left: '50%',
+            transform: `translateX(${textConfig.musician.translateX})`,
+            width: textConfig.musician.width,
+          }}
+        >
+          Musician
+        </div>
 
         {/* BoilingPot video - double buffered */}
         <video
@@ -472,19 +508,6 @@ export default function App() {
           muted
           playsInline
         />
-        {/* Text above chest video */}
-        <div
-          className="absolute text-center text-sm text-gray-400 font-medium pointer-events-none"
-          style={{
-            top: '90px',
-            left: '50%',
-            transform: `translateX(calc(${videoConfig.chest.translateX} + 20px))`,
-            width: '220px',
-          }}
-        >
-          Check out some ideas I've got brewing for Suno.
-        </div>
-
         {/* Clickable overlay for Chest */}
         <div
           className="absolute cursor-pointer"
@@ -499,6 +522,18 @@ export default function App() {
           onMouseEnter={() => setChestHover(true)}
           onMouseLeave={() => setChestHover(false)}
         />
+        {/* Text below chest video */}
+        <div
+          className="absolute text-center text-sm text-gray-400 font-medium pointer-events-none"
+          style={{
+            top: textConfig.pot.top,
+            left: '50%',
+            transform: `translateX(${textConfig.pot.translateX})`,
+            width: textConfig.pot.width,
+          }}
+        >
+          Ideas brewing
+        </div>
 
         {/* LeoBackflip video - double buffered */}
         <video
@@ -539,6 +574,18 @@ export default function App() {
           onMouseEnter={() => setFlipHover(true)}
           onMouseLeave={() => setFlipHover(false)}
         />
+        {/* Text below flip video */}
+        <div
+          className="absolute text-center text-sm text-gray-400 font-medium pointer-events-none"
+          style={{
+            top: textConfig.builder.top,
+            left: '50%',
+            transform: `translateX(${textConfig.builder.translateX})`,
+            width: textConfig.builder.width,
+          }}
+        >
+          Builder
+        </div>
       </div>
 
       {/* Full Screen Panel */}
