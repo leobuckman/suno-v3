@@ -691,10 +691,11 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
         {activeView && (
           <motion.div
             className="fixed inset-0 z-50 bg-white flex flex-col"
+            style={{ willChange: 'transform' }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
           >
             {/* Header with back button */}
             <div className="sticky top-0 bg-white z-10 px-6 py-4">
@@ -710,7 +711,11 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
             
             {/* Content */}
             <div className="flex-1 flex flex-col items-center justify-start px-6 pt-16 pb-8 overflow-y-auto">
-              <div className="flex items-start justify-center w-full">
+              <div className={`flex items-start justify-center w-full ${
+                activeView === 'builder' ? 'pt-8' :
+                activeView === 'keys' && sectionIndex === 0 ? '-mt-8' :
+                activeView === 'keys' && sectionIndex > 0 ? 'pt-2' : ''
+              }`}>
                 {activeView === 'musician' && <Musician />}
                 {activeView === 'keys' && (
                   <div className="w-full">

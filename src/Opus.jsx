@@ -287,7 +287,7 @@ const OpusSection = () => {
     <div className="relative overflow-visible">
       <div className="w-full relative overflow-visible flex justify-center">
         {/* Main Content - Text on left, Card on right */}
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-center overflow-visible">
+        <div className="flex flex-col lg:flex-row gap-8 lg:gap-16 items-start overflow-visible">
           {/* Text Content - Left side */}
           <motion.div
             className="space-y-4 lg:w-[450px] flex-shrink-0"
