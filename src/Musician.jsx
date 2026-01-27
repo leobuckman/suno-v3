@@ -40,27 +40,32 @@ const Musician = () => {
             <div className="w-full max-w-lg lg:max-w-xl">
               <div className="relative rounded-2xl overflow-hidden group cursor-pointer" onClick={() => setShowVideo(true)}>
                 {/* Video Thumbnail */}
-                <div className="relative aspect-[9/10]">
-                  <img 
-                    src="/recital.jpg" 
+                <div className="relative aspect-[9/12]">
+                  <img
+                    src="/recital.jpg"
                     alt="Senior Recital"
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    style={{ objectPosition: '70% center' }}
                   />
                   
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                  
-                  {/* Play button */}
-                  <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                  {/* Play button and text - bottom left */}
+                  <div className="absolute bottom-5 left-5 flex items-center gap-3">
                     <motion.div
-                      className="w-16 h-16 lg:w-20 lg:h-20 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center group-hover:bg-white/20 transition-colors"
-                      whileHover={{ scale: 1.1 }}
+                      className="w-11 h-11 lg:w-12 lg:h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center group-hover:bg-white/30 group-hover:border-white/50 transition-all duration-300 flex-shrink-0"
+                      whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <svg className="w-6 h-6 lg:w-8 lg:h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 lg:w-4.5 lg:h-4.5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z" />
                       </svg>
                     </motion.div>
+                    <div className="text-white">
+                      <div className="font-semibold text-sm lg:text-base">Bottesini Concerto No. 2</div>
+                      <div className="text-xs lg:text-sm text-white/80">Nathan Canfield, piano</div>
+                    </div>
                   </div>
                 </div>
               </div>

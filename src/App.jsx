@@ -482,7 +482,7 @@ export default function App() {
             width: '220px',
           }}
         >
-          Click to check out some ideas I've got brewing for Suno.
+          Check out some ideas I've got brewing for Suno.
         </div>
 
         {/* Clickable overlay for Chest */}
