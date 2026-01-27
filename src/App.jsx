@@ -34,7 +34,7 @@ const videoConfig = {
   },
   flip: {
     scale: 0.45,
-    top: '-117px',
+    top: '-124px',
     translateX: '200px', // offset from center (positive = right of center)
     crop: 'inset(15% 0 0 0)',
   },
@@ -418,7 +418,7 @@ export default function App() {
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
 I'm interested in joining Suno as a Product Designer because it sits at the intersection of the two worlds that define me: software and music. I recently graduated from Northwestern University with a dual degree in Computer Science (B.A.) and Music Performance (B.M.).<br />        </p>
         <a
-          href="mailto:your.email@example.com"
+          href="mailto:leo.s.buckman@gmail.com"
           className="inline-block mt-6 px-6 py-3 bg-gray-900 text-white font-medium rounded-full hover:bg-gray-800 transition-all hover:scale-105 active:scale-95"
         >
           Contact Me
