@@ -725,28 +725,27 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
               {/* Navigation controls for keys view */}
               {activeView === 'keys' && (
                 <div className="fixed bottom-8 left-0 right-0 flex items-center justify-center pointer-events-none">
-                  <div className="pointer-events-auto relative bg-[#f0f0f0] rounded-full p-1 flex">
-                    {/* Sliding indicator */}
-                    <motion.div
-                      className="absolute top-1 bottom-1 bg-[#19191b] rounded-full shadow-lg"
-                      initial={false}
-                      animate={{
-                        left: sectionIndex === 0 ? '4px' : sectionIndex === 1 ? '33.333%' : '66.666%',
-                        width: 'calc(33.333% - 4px)',
-                      }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    />
+                  <div className="pointer-events-auto flex items-center gap-8">
                     {sections.map((section, idx) => (
                       <button
                         key={section.name}
                         onClick={() => setSectionIndex(idx)}
-                        className={`relative z-10 flex-1 px-20 py-2 text-sm font-medium transition-colors duration-200 ${
-                          sectionIndex === idx
-                            ? 'text-white'
-                            : 'text-[#5c5b61]'
-                        }`}
+                        className="relative pb-2"
                       >
-                        {section.name}
+                        <span className={`text-base font-medium transition-colors duration-200 ${
+                          sectionIndex === idx
+                            ? 'text-[#19191b]'
+                            : 'text-gray-400 hover:text-gray-600'
+                        }`}>
+                          {section.name}
+                        </span>
+                        {sectionIndex === idx && (
+                          <motion.div
+                            layoutId="activeTab"
+                            className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#19191b]"
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                          />
+                        )}
                       </button>
                     ))}
                   </div>
