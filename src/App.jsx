@@ -458,11 +458,11 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
         <div
           className="absolute cursor-pointer"
           style={{
-            top: videoConfig.bass.top,
-            left: '50%',
+            top: '-40px',
+            left: '59%',
             transform: `translateX(${videoConfig.bass.translateX})`,
-            width: '320px',
-            height: '500px',
+            width: '270px',
+            height: '400px',
           }}
           onClick={() => setActiveView('musician')}
           onMouseEnter={() => setBassHover(true)}
@@ -512,11 +512,11 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
         <div
           className="absolute cursor-pointer"
           style={{
-            top: videoConfig.chest.top,
+            top: '100px',
             left: '50%',
             transform: `translateX(${videoConfig.chest.translateX})`,
-            width: '200px',
-            height: '500px',
+            width: '270px',
+            height: '260px',
           }}
           onClick={() => setActiveView('keys')}
           onMouseEnter={() => setChestHover(true)}
@@ -564,11 +564,11 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
         <div
           className="absolute cursor-pointer"
           style={{
-            top: videoConfig.flip.top,
-            left: '50%',
+            top: '-35px',
+            left: '53%',
             transform: `translateX(${videoConfig.flip.translateX})`,
-            width: '320px',
-            height: '500px',
+            width: '400px',
+            height: '400px',
           }}
           onClick={() => setActiveView('builder')}
           onMouseEnter={() => setFlipHover(true)}
