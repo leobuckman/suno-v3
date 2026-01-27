@@ -499,7 +499,7 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
                 paddingLeft: 24,
                 paddingRight: 24
               }}
-              transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.13, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -698,7 +698,7 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
             transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
           >
             {/* Header with back button */}
-            <div className="sticky top-0 bg-white z-10 px-6 py-4">
+            <div className="sticky top-0 bg-white z-10 px-6 pt-6 pb-4">
               <button
                 onClick={() => setActiveView(null)}
                 className="text-gray-600 hover:text-gray-900 transition-all hover:-translate-y-1"
