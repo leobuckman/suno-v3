@@ -22,19 +22,19 @@ const videoConfig = {
   },
   bass: {
     scale: 0.4,
-    top: '-140px',
+    top: '-137px',
     translateX: '-610px', // offset from center (negative = left of center)
     crop: 'inset(15% 0 0 0)', // Crop 30% from left and right sides
   },
   chest: {
     scale: 0.38,
-    top: '-55px',
-    translateX: '-140px', // offset from center
+    top: '-50px',
+    translateX: '-136px', // offset from center
     crop: 'inset(35% 17% 0 17%)', // Crop 30% from left and right sides
   },
   flip: {
-    scale: 0.44,
-    top: '-120px',
+    scale: 0.45,
+    top: '-117px',
     translateX: '200px', // offset from center (positive = right of center)
     crop: 'inset(15% 0 0 0)',
   },
@@ -532,7 +532,7 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
             width: textConfig.pot.width,
           }}
         >
-          Ideas brewing
+          Ideas brewing for Suno
         </div>
 
         {/* LeoBackflip video - double buffered */}
