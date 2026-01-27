@@ -19,8 +19,8 @@ export default {
         }
       },
       fontFamily: {
-        'display': ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        'body': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        'display': ['Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        'body': ['Montserrat', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         'up': ['Helvetica', 'Arial', 'sans-serif'],
       },
       animation: {

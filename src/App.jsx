@@ -1,7 +1,10 @@
 import { useRef, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import Musician from './Musician'
 import KeysSection from './Keys/KeysSection'
+import ProgressionSection from './Progression/Progression'
+import OpusSection from './Opus'
 import Builder from './Builder'
 
 // Sequence: Loop1 -> Loop1 -> Loop2 -> repeat
@@ -10,28 +13,29 @@ const chestSequence = ['/Loops/BoilingPot.mp4']
 const flipSequence = ['/Loops/FlipLoop1.mp4', '/Loops/FlipLoop1.mp4', '/Loops/FlipLoop2.mp4']
 
 // ========== VIDEO LAYOUT CONFIG ==========
-// Each video has FIXED position - changing one won't affect others
-// Use top/left to position, scale to resize (1 = original size, 0.5 = half, 2 = double)
+// Center-based positioning: all videos positioned relative to container center (50%)
+// Use translateX to offset from center, scale to resize
 const videoConfig = {
   container: {
     height: '600px', // total height of the video section
+    maxWidth: '1280px', // max width for centered layout (prevents uncentering on zoom)
   },
   bass: {
     scale: 0.3,
-    top: '-30px',
-    left: '230px',
+    top: '-10px',
+    translateX: '-500px', // offset from center (negative = left of center)
     crop: 'inset(15% 0 0 0)', // Crop 30% from left and right sides
   },
   chest: {
     scale: 0.3,
-    top: '50px',
-    left: '633px',
+    top: '37px',
+    translateX: '-100px', // offset from center
     crop: 'inset(35% 17% 0 17%)', // Crop 30% from left and right sides
   },
   flip: {
     scale: 0.32,
-    top: '-30px',
-    left: '910px',
+    top: '20px',
+    translateX: '200px', // offset from center (positive = right of center)
     crop: 'inset(15% 0 0 0)',
   },
 }
@@ -54,6 +58,14 @@ export default function App() {
   
   // Track which view is open (null, 'musician', 'keys', 'builder')
   const [activeView, setActiveView] = useState(null)
+
+  // Track which section is shown in the keys view
+  const [sectionIndex, setSectionIndex] = useState(0)
+  const sections = [
+    { name: 'Keys', component: KeysSection },
+    { name: 'Progressions', component: ProgressionSection },
+    { name: 'Scores', component: OpusSection }
+  ]
   
   // Track hover state for videos
   const [bassHover, setBassHover] = useState(false)
@@ -264,6 +276,13 @@ export default function App() {
     }
   }, [])
 
+  // Reset section index when opening keys view
+  useEffect(() => {
+    if (activeView === 'keys') {
+      setSectionIndex(0)
+    }
+  }, [activeView])
+
   // Mute/unmute videos when a page is displayed
   useEffect(() => {
     const bass1 = bassVideoRef1.current
@@ -346,15 +365,15 @@ export default function App() {
       </div>
 
       {/* Video container with relative positioning */}
-      <div className="relative w-full mt-6" style={{ height: videoConfig.container.height }}>
+      <div className="relative w-full mx-auto mt-6" style={{ height: videoConfig.container.height, maxWidth: videoConfig.container.maxWidth }}>
         {/* LeoBass video - double buffered */}
         <video
           ref={bassVideoRef1}
           className="absolute origin-top-left transition-transform duration-200"
-          style={{ 
-            transform: `scale(${videoConfig.bass.scale}) translateY(${bassHover ? '-25px' : '0'})`,
-            top: videoConfig.bass.top, 
-            left: videoConfig.bass.left,
+          style={{
+            transform: `translateX(${videoConfig.bass.translateX}) scale(${videoConfig.bass.scale}) translateY(${bassHover ? '-25px' : '0'})`,
+            top: videoConfig.bass.top,
+            left: '50%',
             clipPath: videoConfig.bass.crop,
             visibility: bassState.activePlayer === 0 ? 'visible' : 'hidden'
           }}
@@ -364,10 +383,10 @@ export default function App() {
         <video
           ref={bassVideoRef2}
           className="absolute origin-top-left transition-transform duration-200"
-          style={{ 
-            transform: `scale(${videoConfig.bass.scale}) translateY(${bassHover ? '-25px' : '0'})`,
-            top: videoConfig.bass.top, 
-            left: videoConfig.bass.left,
+          style={{
+            transform: `translateX(${videoConfig.bass.translateX}) scale(${videoConfig.bass.scale}) translateY(${bassHover ? '-25px' : '0'})`,
+            top: videoConfig.bass.top,
+            left: '50%',
             clipPath: videoConfig.bass.crop,
             visibility: bassState.activePlayer === 1 ? 'visible' : 'hidden'
           }}
@@ -379,7 +398,8 @@ export default function App() {
           className="absolute cursor-pointer"
           style={{
             top: videoConfig.bass.top,
-            left: videoConfig.bass.left,
+            left: '50%',
+            transform: `translateX(${videoConfig.bass.translateX})`,
             width: '320px',
             height: '500px',
           }}
@@ -392,10 +412,10 @@ export default function App() {
         <video
           ref={chestVideoRef1}
           className="absolute origin-top-left transition-transform duration-200"
-          style={{ 
-            transform: `scale(${videoConfig.chest.scale}) translateY(${chestHover ? '-25px' : '0'})`,
-            top: videoConfig.chest.top, 
-            left: videoConfig.chest.left,
+          style={{
+            transform: `translateX(${videoConfig.chest.translateX}) scale(${videoConfig.chest.scale}) translateY(${chestHover ? '-25px' : '0'})`,
+            top: videoConfig.chest.top,
+            left: '50%',
             clipPath: videoConfig.chest.crop,
             visibility: chestState.activePlayer === 0 ? 'visible' : 'hidden'
           }}
@@ -405,10 +425,10 @@ export default function App() {
         <video
           ref={chestVideoRef2}
           className="absolute origin-top-left transition-transform duration-200"
-          style={{ 
-            transform: `scale(${videoConfig.chest.scale}) translateY(${chestHover ? '-25px' : '0'})`,
-            top: videoConfig.chest.top, 
-            left: videoConfig.chest.left,
+          style={{
+            transform: `translateX(${videoConfig.chest.translateX}) scale(${videoConfig.chest.scale}) translateY(${chestHover ? '-25px' : '0'})`,
+            top: videoConfig.chest.top,
+            left: '50%',
             clipPath: videoConfig.chest.crop,
             visibility: chestState.activePlayer === 1 ? 'visible' : 'hidden'
           }}
@@ -420,8 +440,9 @@ export default function App() {
           className="absolute text-center text-sm text-gray-400 font-medium pointer-events-none"
           style={{
             top: '90px',
-            left: '645px',
-            width: '200px',
+            left: '50%',
+            transform: `translateX(calc(${videoConfig.chest.translateX}))`,
+            width: '220px',
           }}
         >
           Click to check out some ideas I've got brewing for Suno.
@@ -432,7 +453,8 @@ export default function App() {
           className="absolute cursor-pointer"
           style={{
             top: videoConfig.chest.top,
-            left: videoConfig.chest.left,
+            left: '50%',
+            transform: `translateX(${videoConfig.chest.translateX})`,
             width: '200px',
             height: '500px',
           }}
@@ -445,10 +467,10 @@ export default function App() {
         <video
           ref={flipVideoRef1}
           className="absolute origin-top-left transition-transform duration-200"
-          style={{ 
-            transform: `scale(${videoConfig.flip.scale}) translateY(${flipHover ? '-25px' : '0'})`,
-            top: videoConfig.flip.top, 
-            left: videoConfig.flip.left,
+          style={{
+            transform: `translateX(${videoConfig.flip.translateX}) scale(${videoConfig.flip.scale}) translateY(${flipHover ? '-25px' : '0'})`,
+            top: videoConfig.flip.top,
+            left: '50%',
             clipPath: videoConfig.flip.crop,
             visibility: flipState.activePlayer === 0 ? 'visible' : 'hidden'
           }}
@@ -457,10 +479,10 @@ export default function App() {
         <video
           ref={flipVideoRef2}
           className="absolute origin-top-left transition-transform duration-200"
-          style={{ 
-            transform: `scale(${videoConfig.flip.scale}) translateY(${flipHover ? '-25px' : '0'})`,
-            top: videoConfig.flip.top, 
-            left: videoConfig.flip.left,
+          style={{
+            transform: `translateX(${videoConfig.flip.translateX}) scale(${videoConfig.flip.scale}) translateY(${flipHover ? '-25px' : '0'})`,
+            top: videoConfig.flip.top,
+            left: '50%',
             clipPath: videoConfig.flip.crop,
             visibility: flipState.activePlayer === 1 ? 'visible' : 'hidden'
           }}
@@ -471,7 +493,8 @@ export default function App() {
           className="absolute cursor-pointer"
           style={{
             top: videoConfig.flip.top,
-            left: videoConfig.flip.left,
+            left: '50%',
+            transform: `translateX(${videoConfig.flip.translateX})`,
             width: '320px',
             height: '500px',
           }}
@@ -504,10 +527,48 @@ export default function App() {
             </div>
             
             {/* Content */}
-            <div className="flex-1 flex items-start justify-center px-6 pt-16">
-              {activeView === 'musician' && <Musician />}
-              {activeView === 'keys' && <KeysSection />}
-              {activeView === 'builder' && <Builder />}
+            <div className="flex-1 flex flex-col items-center justify-start px-6 pt-16 pb-8 overflow-y-auto">
+              <div className="flex items-start justify-center w-full">
+                {activeView === 'musician' && <Musician />}
+                {activeView === 'keys' && (
+                  <div className="w-full">
+                    {sectionIndex === 0 && <KeysSection />}
+                    {sectionIndex === 1 && <ProgressionSection />}
+                    {sectionIndex === 2 && <OpusSection />}
+                  </div>
+                )}
+                {activeView === 'builder' && <Builder />}
+              </div>
+
+              {/* Navigation controls for keys view */}
+              {activeView === 'keys' && (
+                <div className="fixed bottom-8 left-0 right-0 flex items-center justify-center pointer-events-none">
+                  <div className="flex items-center gap-3 pointer-events-auto relative">
+                    {sections.map((section, idx) => (
+                      <button
+                        key={section.name}
+                        onClick={() => setSectionIndex(idx)}
+                        className="relative px-4 py-2 rounded-full text-sm font-medium transition-colors"
+                      >
+                        {idx === sectionIndex && (
+                          <motion.div
+                            layoutId="activeSection"
+                            className="absolute inset-0 bg-gray-900 rounded-full"
+                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                          />
+                        )}
+                        <span className={`relative z-10 ${
+                          idx === sectionIndex
+                            ? 'text-white'
+                            : 'text-gray-600 hover:text-gray-900'
+                        }`}>
+                          {section.name}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
