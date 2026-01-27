@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Play } from 'lucide-react'
 
 const Musician = () => {
   const [showVideo, setShowVideo] = useState(false)
@@ -54,13 +55,14 @@ const Musician = () => {
                   {/* Play button and text - bottom left */}
                   <div className="absolute bottom-5 left-5 flex items-center gap-3">
                     <motion.div
-                      className="w-11 h-11 lg:w-12 lg:h-12 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center group-hover:bg-white/30 group-hover:border-white/50 transition-all duration-300 flex-shrink-0"
+                      className="w-11 h-11 lg:w-12 lg:h-12 rounded-full flex items-center justify-center transition-all duration-300 flex-shrink-0"
+                      style={{
+                        background: 'linear-gradient(135deg, #F7A505 0%, #FD2D6C 50%, #F14925 100%)'
+                      }}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <svg className="w-4 h-4 lg:w-4.5 lg:h-4.5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M8 5v14l11-7z" />
-                      </svg>
+                      <Play size={16} fill="white" className="text-white lg:w-4.5 lg:h-4.5" />
                     </motion.div>
                     <div className="text-white">
                       <div className="font-semibold text-sm lg:text-base">Bottesini Concerto No. 2</div>
