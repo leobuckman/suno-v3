@@ -33,7 +33,7 @@ const PLACEHOLDER_PROMPTS = [
 ]
 
 // The inner card UI matching the reference image style
-const ScoreTransformCard = () => {
+export const ScoreTransformCard = () => {
   const [prompt, setPrompt] = useState('')
   const [mode, setMode] = useState('transform') // 'transform', 'extract'
   const [activeSuggestions, setActiveSuggestions] = useState(new Set())

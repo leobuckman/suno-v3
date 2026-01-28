@@ -2,9 +2,7 @@ import { useRef, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Play } from 'lucide-react'
 import Musician from './Musician'
-import KeysSection from './Keys/KeysSection'
-import ProgressionSection from './Progression/Progression'
-import OpusSection from './Opus'
+import IdeasSection from './IdeasSection'
 import Builder from './Builder'
 
 // Sequence: Loop1 -> Loop1 -> Loop2 -> repeat
@@ -85,10 +83,11 @@ export default function App() {
 
   // Track which section is shown in the keys view
   const [sectionIndex, setSectionIndex] = useState(0)
+  const [sectionDirection, setSectionDirection] = useState(1)
   const sections = [
-    { name: 'Keys', component: KeysSection },
-    { name: 'Progressions', component: ProgressionSection },
-    { name: 'Scores', component: OpusSection }
+    { name: 'Keys', key: 'keys' },
+    { name: 'Progressions', key: 'progressions' },
+    { name: 'Scores', key: 'scores' }
   ]
   
   // Track hover state for videos
@@ -334,8 +333,16 @@ export default function App() {
   useEffect(() => {
     if (activeView === 'keys') {
       setSectionIndex(0)
+      setSectionDirection(1)
     }
   }, [activeView])
+
+  // Handle section navigation with direction tracking
+  const handleSectionChange = (newIndex) => {
+    if (newIndex === sectionIndex) return
+    setSectionDirection(newIndex > sectionIndex ? 1 : -1)
+    setSectionIndex(newIndex)
+  }
 
   // Mute/unmute videos and audio when a page is displayed
   useEffect(() => {
@@ -697,44 +704,25 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
             exit={{ y: '100%' }}
             transition={{ duration: 0.4, ease: [0.32, 0.72, 0, 1] }}
           >
-            {/* Header with back button */}
-            <div className="sticky top-0 bg-white z-10 px-6 pt-6 pb-4">
-              <button
-                onClick={() => setActiveView(null)}
-                className="text-gray-600 hover:text-gray-900 transition-all hover:-translate-y-1"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-            </div>
-            
-            {/* Content */}
-            <div className="flex-1 flex flex-col items-center justify-start px-6 pt-16 pb-8 overflow-y-auto">
-              <div className={`flex items-start justify-center w-full ${
-                activeView === 'builder' ? 'pt-8' :
-                activeView === 'keys' && sectionIndex === 0 ? '-mt-8' :
-                activeView === 'keys' && sectionIndex > 0 ? 'pt-2' : ''
-              }`}>
-                {activeView === 'musician' && <Musician />}
-                {activeView === 'keys' && (
-                  <div className="w-full">
-                    {sectionIndex === 0 && <KeysSection />}
-                    {sectionIndex === 1 && <ProgressionSection />}
-                    {sectionIndex === 2 && <OpusSection />}
-                  </div>
-                )}
-                {activeView === 'builder' && <Builder />}
-              </div>
+            {/* Header with back button and navigation */}
+            <div className="sticky top-0 bg-white z-10 px-6 pt-6 pb-8">
+              <div className="relative flex items-center justify-center">
+                <button
+                  onClick={() => setActiveView(null)}
+                  className="absolute left-0 text-gray-600 hover:text-gray-900 transition-all hover:-translate-y-1"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
 
-              {/* Navigation controls for keys view */}
-              {activeView === 'keys' && (
-                <div className="fixed bottom-8 left-0 right-0 flex items-center justify-center pointer-events-none">
-                  <div className="pointer-events-auto flex items-center gap-8">
+                {/* Navigation controls for keys view */}
+                {activeView === 'keys' && (
+                  <div className="flex items-center gap-8 mt-8">
                     {sections.map((section, idx) => (
                       <button
                         key={section.name}
-                        onClick={() => setSectionIndex(idx)}
+                        onClick={() => handleSectionChange(idx)}
                         className="relative pb-2"
                       >
                         <span className={`text-base font-medium transition-colors duration-200 ${
@@ -754,8 +742,26 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
                       </button>
                     ))}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 flex flex-col items-center justify-start px-6 pt-10 pb-8 overflow-y-auto">
+              <div className={`flex items-start justify-center w-full ${
+                activeView === 'builder' ? 'pt-20' :
+                activeView === 'musician' ? 'pt-12' :
+                activeView === 'keys' ? 'pt-0' : ''
+              }`}>
+                {activeView === 'musician' && <Musician />}
+                {activeView === 'keys' && (
+                  <IdeasSection
+                    sectionKey={sections[sectionIndex].key}
+                    direction={sectionDirection}
+                  />
+                )}
+                {activeView === 'builder' && <Builder />}
+              </div>
             </div>
           </motion.div>
         )}

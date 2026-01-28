@@ -263,7 +263,7 @@ const EditorPanel = ({ chord, onChange, playChord }) => {
 };
 
 // Chord Editor Card Component
-const ChordEditorCard = () => {
+export const ChordEditorCard = () => {
   // Separate ORDER from DATA to prevent layout animations on property changes
   const [chordOrder, setChordOrder] = useState([]); // Array of IDs - only changes on reorder/add/remove
   const [chordsById, setChordsById] = useState({}); // Object keyed by ID - changes on property updates
