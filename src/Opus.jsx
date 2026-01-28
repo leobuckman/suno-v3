@@ -134,7 +134,7 @@ const ScoreTransformCard = () => {
               )}
               {/* Dice icon */}
               <div className="absolute right-0 top-0 w-12 h-12">
-                <img src="/images/Dice.png" alt="" className="w-full h-full object-contain" />
+                <img src="/public/Dice.png" alt="" className="w-full h-full object-contain" />
               </div>
             </div>
 
