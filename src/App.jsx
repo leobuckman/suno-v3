@@ -709,7 +709,9 @@ I'm interested in joining Suno as a Product Designer because it sits at the inte
               <div className="relative flex items-center justify-center">
                 <button
                   onClick={() => setActiveView(null)}
-                  className="absolute left-0 text-gray-600 hover:text-gray-900 transition-all hover:-translate-y-1"
+                  className={`absolute left-0 text-gray-600 hover:text-gray-900 transition-all hover:-translate-y-1 ${
+                    activeView === 'musician' || activeView === 'builder' ? 'top-2' : 'top-0'
+                  }`}
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
